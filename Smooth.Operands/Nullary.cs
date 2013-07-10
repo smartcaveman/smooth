@@ -16,7 +16,7 @@ namespace Smooth.Operands
             get { return 0; }
         }
 
-        public bool IsDefault
+        public bool IsInitial
         {
             get { return true; }
         }
@@ -37,7 +37,7 @@ namespace Smooth.Operands
 
         public bool Equals(INarySource other)
         {
-            return ReferenceEquals(other, null) || other.IsDefault || this.Equals(other.Operands);
+            return ReferenceEquals(other, null) || other.IsInitial || this.Equals(other.Operands);
         }
 
         public bool Equals(IEnumerable other)

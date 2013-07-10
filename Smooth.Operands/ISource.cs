@@ -4,6 +4,6 @@ namespace Smooth.Operands
 {
     public interface ISource : IEquatable<INarySource>
     {
-        bool IsDefault { get; }
+        bool IsInitial { get; }
     }
 }

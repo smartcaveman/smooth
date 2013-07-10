@@ -23,9 +23,9 @@ namespace Smooth.Operands
             this.right = Unary.Value(right);
         }
 
-        public bool IsDefault
+        public bool IsInitial
         {
-            get { return Left.IsDefault && Right.IsDefault; }
+            get { return Left.IsInitial && Right.IsInitial; }
         }
 
 
@@ -94,7 +94,7 @@ namespace Smooth.Operands
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(obj, null)) return IsDefault;
+            if (ReferenceEquals(obj, null)) return IsInitial;
             if (obj is IBinarySource<L, R>) return Equals((IBinarySource<L, R>)obj);
             if (obj is INarySource) return Equals((INarySource)obj);
             if (obj is Tuple<L, R>) return Equals((Tuple<L, R>)obj);
@@ -104,13 +104,13 @@ namespace Smooth.Operands
 
         public bool Equals(IBinarySource<L, R> other)
         {
-            return (ReferenceEquals(other, null) || other.IsDefault) ? IsDefault : Left.ValueEquals(other.LeftOperand) && Right.ValueEquals(other.RightOperand);
+            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : Left.ValueEquals(other.LeftOperand) && Right.ValueEquals(other.RightOperand);
         }
 
         public bool Equals(Tuple<L, R> other)
         {
             return ReferenceEquals(other, null)
-                       ? IsDefault
+                       ? IsInitial
                        : Left.Equals(Unary.Value(other.Item1)) && Right.Equals(Unary.Value(other.Item2));
         }
 
@@ -121,19 +121,19 @@ namespace Smooth.Operands
 
         public bool Equals(INarySource other)
         {
-            if ((ReferenceEquals(other, null) || other.IsDefault)) return IsDefault;
+            if ((ReferenceEquals(other, null) || other.IsInitial)) return IsInitial;
             return Equals(other.Operands);
         }
 
         public bool Equals(IEnumerable other)
         {
-            if (ReferenceEquals(other, null)) return IsDefault;
+            if (ReferenceEquals(other, null)) return IsInitial;
 
             var list = other.Cast<object>().ToList();
             switch (list.Count)
             {
                 case 0:
-                    return IsDefault;
+                    return IsInitial;
                 case 1:
                     return false;
                 case 2:

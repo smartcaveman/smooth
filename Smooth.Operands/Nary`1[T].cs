@@ -24,7 +24,7 @@ namespace Smooth.Operands
             return '(' + string.Join(",", Operands) + ')';
         }
 
-        public bool IsDefault
+        public bool IsInitial
         {
             get
             {
@@ -65,7 +65,7 @@ namespace Smooth.Operands
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(obj, null))
-                return IsDefault;
+                return IsInitial;
             if (obj is INarySource) return Equals((INarySource)obj);
             if (obj is IEnumerable) return Equals((IEnumerable)obj);
             if (obj is IStructuralEquatable)
@@ -126,29 +126,29 @@ namespace Smooth.Operands
 
         public bool Equals(Nary<T> other)
         {
-            return IsDefault ? other.IsDefault : !other.IsDefault && Equals(other.Operands);
+            return IsInitial ? other.IsInitial : !other.IsInitial && Equals(other.Operands);
         }
 
         public bool Equals(INarySource other)
         {
-            if (ReferenceEquals(other, null) || other.IsDefault) return IsDefault;
+            if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
             if (Arity != other.Arity) return false;
             return Equals(other.Operands);
         }
 
         public bool Equals(INarySource<T> other)
         {
-            if (ReferenceEquals(other, null) || other.IsDefault) return IsDefault;
+            if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
             if (Arity != other.Arity) return false;
             return Equals(other.Operands);
         }
 
         public bool Equals(IEnumerable other)
         {
-            if (ReferenceEquals(other, null)) return IsDefault;
+            if (ReferenceEquals(other, null)) return IsInitial;
             var comparand = other.Cast<object>().ToList();
             if (Arity != comparand.Count)
-                return IsDefault && comparand.TrueForAll(x => ReferenceEquals(x, null));
+                return IsInitial && comparand.TrueForAll(x => ReferenceEquals(x, null));
             return Operands.Cast<object>().SequenceEqual(comparand);
         }
 

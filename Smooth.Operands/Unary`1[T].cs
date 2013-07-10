@@ -26,7 +26,7 @@ namespace Smooth.Operands
             get { return EqualityComparer<T>.Default; }
         }
 
-        public bool IsDefault
+        public bool IsInitial
         {
             get { return OperandEqualityComparer.Equals(Operand, default(T)); }
         }
@@ -84,7 +84,7 @@ namespace Smooth.Operands
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(obj, null)) return IsDefault;
+            if (ReferenceEquals(obj, null)) return IsInitial;
             if (obj is IUnarySource<T>) return Equals((IUnarySource<T>)obj);
             if (obj is INarySource) return Equals((INarySource)obj);
             if (obj is Tuple<T>) return Equals((Tuple<T>)obj);
@@ -99,27 +99,27 @@ namespace Smooth.Operands
 
         public bool Equals(Tuple<T> other)
         {
-            return ReferenceEquals(other, null) ? IsDefault : OperandEqualityComparer.Equals(Operand, other.Item1);
+            return ReferenceEquals(other, null) ? IsInitial : OperandEqualityComparer.Equals(Operand, other.Item1);
         }
 
         public bool Equals(IUnarySource<T> other)
         {
-            return (ReferenceEquals(other, null) || other.IsDefault) ? IsDefault : OperandEqualityComparer.Equals(Operand, other.Operand);
+            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : OperandEqualityComparer.Equals(Operand, other.Operand);
         }
 
         public bool Equals(INarySource other)
         {
-            return (ReferenceEquals(other, null) || other.IsDefault) ? IsDefault : Equals(other.Operands);
+            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : Equals(other.Operands);
         }
 
         public bool Equals(IEnumerable other)
         {
-            if (ReferenceEquals(other, null)) return IsDefault;
+            if (ReferenceEquals(other, null)) return IsInitial;
             var list = other.Cast<object>().ToList();
             switch (list.Count)
             {
                 case 0:
-                    return IsDefault;
+                    return IsInitial;
                 case 1:
                     return list[0] is T && OperandEqualityComparer.Equals(Operand, (T)list[0]);
                 default:
@@ -129,7 +129,7 @@ namespace Smooth.Operands
 
         public override int GetHashCode()
         {
-            return IsDefault ? 0 : OperandEqualityComparer.GetHashCode(Operand);
+            return IsInitial ? 0 : OperandEqualityComparer.GetHashCode(Operand);
         }
 
         public static bool operator ==(Unary<T> x, Unary<T> y)
