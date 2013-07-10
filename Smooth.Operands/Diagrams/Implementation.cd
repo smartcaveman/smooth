@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Smooth.Operands.Binary">
+    <Position X="6.5" Y="9.75" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAABAAIAAAAAAAAACAAAAAgAAAAAAA=</HashCode>
+      <FileName>Operands\Binary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Smooth.Operands.Nary">
+    <Position X="6.5" Y="14.75" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAACAAAAAgAAAAAAA=</HashCode>
+      <FileName>Operands\Nary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Smooth.Operands.Unary">
+    <Position X="6.75" Y="5.25" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAABAAAAAAAAAAAACAAAgAgQAAAAAA=</HashCode>
+      <FileName>Operands\Unary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Smooth.Operands.Unary&lt;T&gt;" BaseTypeListCollapsed="true">
+    <Position X="1.75" Y="5.25" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAkAQAAAAAIAFAEgABAAAAAAAACAIAUAAAAAAEAAyA=</HashCode>
+      <FileName>Operands\Unary`1[T].cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="Smooth.Operands.Binary&lt;L, R&gt;" BaseTypeListCollapsed="true">
+    <Position X="1.75" Y="9.75" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAgAQAAAAAAAHAEgAAAAAAAAAAKIIgECACBAAAAiiA=</HashCode>
+      <FileName>Operands\Binary`2[L,R].cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="Smooth.Operands.Nary&lt;T&gt;" BaseTypeListCollapsed="true">
+    <Position X="1.75" Y="14.75" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAgAQAAAAABAEAEgACAAAAAAAACAIAEAgAAAAAAAyA=</HashCode>
+      <FileName>Operands\Nary`1[T].cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="Smooth.Operands.Nullary" BaseTypeListCollapsed="true">
+    <Position X="1.75" Y="1.75" Width="4.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAgAQAAAAAAAGBEgAAAAEAAAAAAAIAEAAAgAAAAAiA=</HashCode>
+      <FileName>Operands\Nullary.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
