@@ -12,7 +12,7 @@ namespace Smooth.OperationModel
 
         public Operator(string symbol)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(symbol));
+            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(symbol));
             this.symbol = symbol;
         }
 
@@ -21,16 +21,18 @@ namespace Smooth.OperationModel
             get { return this.symbol; }
         }
 
-        IResult IOperator.Operate(ISource input)
+        IOperationResult<TOut> IOperator<TOut>.Process(ISource input)
         {
-            return Operate(input);
+            return Process(input);
         }
 
-        IResult<TOut> IOperator<TIn, TOut>.Operate(TIn input)
+        IOperationResult IOperator.Process(ISource input)
         {
-            return Operate(input);
+            return Process(input);
         }
 
-        protected abstract IResult<TOut> Operate(ISource input);
+        public abstract IOperationResult<TOut> Process(TIn input);
+
+        protected abstract IOperationResult<TOut> Process(ISource input);
     }
 }

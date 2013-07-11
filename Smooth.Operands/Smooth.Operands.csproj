@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Binary.cs" />
     <Compile Include="Binary`2[L,R].cs" />
+    <Compile Include="Equatable.cs" />
     <Compile Include="IBinarySource.cs" />
     <Compile Include="IBinarySource`2[L,R].cs" />
     <Compile Include="INarySource.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unary.cs" />
     <Compile Include="Unary`1[T].cs" />
+    <Compile Include="ValueObject`1[T].cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Diagrams\Implementation.cd">

@@ -5,5 +5,7 @@
         object LeftOperand { get; }
 
         object RightOperand { get; }
+
+        IBinarySource Reverse();
     }
 }

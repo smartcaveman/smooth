@@ -1,14 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace Smooth.Operands
 {
     public struct Nullary : INullarySource, INarySource<object>, IEquatable<IEnumerable>, IEquatable<Nullary>, IEnumerable<object>
     {
-        public static Nullary Value()
+        static Nullary()
         {
-            return default(Nullary);
+            Value = default(Nullary);
+        }
+
+        public static readonly Nullary Value;
+
+        public static Nullary Source()
+        {
+            return Value;
         }
 
         public int Arity
@@ -21,15 +29,14 @@ namespace Smooth.Operands
             get { return true; }
         }
 
-        public INarySource<object> Nary()
+        INarySource ISource.ToNary()
         {
             return this;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Nullary) return true;
-            if (ReferenceEquals(obj, null)) return true;
+            if (obj is Nullary || ReferenceEquals(obj, null)) return true;
             if (obj is IEnumerable) return Equals((IEnumerable)obj);
             if (obj is INarySource) return Equals((INarySource)obj);
             return false;
@@ -108,6 +115,12 @@ namespace Smooth.Operands
         public static bool operator !=(object a, Nullary b)
         {
             return b.Equals(a).Equals(false);
+        }
+
+        public static Nullary FromArray(object[] arg)
+        {
+            Contract.Requires<ArgumentException>(arg == null || arg.Length == 0);
+            return Source();
         }
     }
 }

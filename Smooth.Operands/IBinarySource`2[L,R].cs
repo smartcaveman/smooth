@@ -5,5 +5,7 @@
         new L LeftOperand { get; }
 
         new R RightOperand { get; }
+
+        new IBinarySource<R, L> Reverse();
     }
 }

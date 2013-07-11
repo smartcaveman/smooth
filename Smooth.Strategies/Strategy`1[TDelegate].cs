@@ -17,9 +17,8 @@
         {
             get { return null; }
         }
-         
-        protected abstract TDelegate ResolveOriginalDelegate();
 
+        protected abstract TDelegate ResolveOriginalDelegate();
 
         public TDelegate Delegate
         {

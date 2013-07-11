@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
-using Smooth.OperationModel;
+using Smooth.ProcessModel;
 
 namespace Smooth.Strategies
 {
-    public class ActionStrategy<TContext> : Strategy<Action<TContext>>, IActionStrategy<TContext>
+    public class ProcessStrategy<TContext> : Strategy<Action<TContext>>, IProcessStrategy<TContext>
     {
         private static readonly Predicate<TContext> Any;
         private Action<TContext> action;
         private readonly Func<Action<TContext>> loadAction;
         private readonly Predicate<TContext> preCondition, postCondition, invariant;
 
-        static ActionStrategy()
+        static ProcessStrategy()
         {
             Any = x => true;
         }
 
-        public ActionStrategy(
+        public ProcessStrategy(
             Func<Action<TContext>> loadAction,
             Predicate<TContext> preCondition = null,
             Predicate<TContext> postCondition = null,
@@ -30,18 +30,18 @@ namespace Smooth.Strategies
             this.invariant = invariant;
         }
 
-        public ActionStrategy(
+        public ProcessStrategy(
             Action<TContext> action,
             Predicate<TContext> preCondition = null,
             Predicate<TContext> postCondition = null,
             Predicate<TContext> invariant = null)
-            :this(preCondition,postCondition,invariant)
+            : this(preCondition, postCondition, invariant)
         {
             Contract.Requires<ArgumentNullException>(!ReferenceEquals(action, null));
-            this.action = action; 
+            this.action = action;
         }
 
-        private ActionStrategy(
+        private ProcessStrategy(
             Predicate<TContext> preCondition = null,
             Predicate<TContext> postCondition = null,
             Predicate<TContext> invariant = null)
@@ -51,7 +51,7 @@ namespace Smooth.Strategies
             this.invariant = invariant;
         }
 
-        protected IActionStrategy<TContext> Action
+        protected IProcessStrategy<TContext> Action
         {
             get { return this; }
         }
@@ -86,7 +86,7 @@ namespace Smooth.Strategies
             get { return PostCondition ?? Any; }
         }
 
-        IResult<TContext> IActionStrategy<TContext>.Execute(TContext context)
+        ProcessResult IProcessStrategy<TContext>.Execute(TContext context)
         {
             bool preValidate, postValidate;
             try
@@ -95,11 +95,11 @@ namespace Smooth.Strategies
             }
             catch (Exception exception)
             {
-                return OperationResult<TContext>.PreConditionException(exception);
+                return ProcessResult.PreConditionException(exception);
             }
             if (!preValidate)
             {
-                return OperationResult<TContext>.PreConditionFailed();
+                return ProcessResult.PreConditionFailed();
             }
             try
             {
@@ -107,7 +107,7 @@ namespace Smooth.Strategies
             }
             catch (Exception exception)
             {
-                return OperationResult<TContext>.OperationException(exception);
+                return ProcessResult.ProcessException(exception);
             }
             try
             {
@@ -115,21 +115,21 @@ namespace Smooth.Strategies
             }
             catch (Exception exception)
             {
-                return OperationResult<TContext>.PostConditionException(context, exception);
+                return ProcessResult.PostConditionException(exception);
             }
             if (!postValidate)
             {
-                return OperationResult<TContext>.PostConditionFailed(context);
+                return ProcessResult.PostConditionFailed();
             }
-            return OperationResult<TContext>.Completed(context);
+            return ProcessResult.Completed();
         }
-         
+
         private void Execute(TContext context)
         {
-            IResult<TContext> operationResult = Action.Execute(context);
-            if (operationResult.IsError)
+            ProcessResult result = Action.Execute(context);
+            if (result.HasError)
             {
-                throw operationResult.IsException ? operationResult.Exception : new InvalidOperationException();
+                throw result.HasException ? result.Exception : new InvalidOperationException();
             }
         }
 

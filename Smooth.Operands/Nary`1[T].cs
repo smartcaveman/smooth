@@ -7,16 +7,33 @@ namespace Smooth.Operands
 {
     public struct Nary<T>
         : INarySource<T>
-        , IEquatable<INarySource<T>>
         , IEquatable<IEnumerable>
+        , IEquatable<IStructuralEquatable>
         , IEquatable<Nary<T>>
         , IEnumerable<T>
     {
+        static Nary()
+        {
+            Default = default(Nary<T>);
+        }
+
+        public static readonly Nary<T> Default;
+
+        private static bool IsNullTerm(object x)
+        {
+            return ReferenceEquals(x, null) || x is T && ValueObject<T>.Equivalence.Equals((T)x);
+        }
+
         private readonly IList<T> operands;
 
         public Nary(IEnumerable<T> operands)
         {
-            this.operands = Array.AsReadOnly((operands ?? Enumerable.Empty<T>()).ToArray());
+            this.operands = Array.AsReadOnly(operands == null ? new T[0] : operands.ToArray());
+        }
+
+        INarySource ISource.ToNary()
+        {
+            return this;
         }
 
         public override string ToString()
@@ -29,7 +46,7 @@ namespace Smooth.Operands
             get
             {
                 return Arity == 0
-                       || Operands.All(x => Unary<T>.OperandEqualityComparer.Equals(x, default(T)));
+                       || Operands.All(x => ValueObject<T>.Equivalence.Equals(x, ValueObject<T>.Initial));
             }
         }
 
@@ -66,14 +83,15 @@ namespace Smooth.Operands
         {
             if (ReferenceEquals(obj, null))
                 return IsInitial;
-            if (obj is INarySource) return Equals((INarySource)obj);
-            if (obj is IEnumerable) return Equals((IEnumerable)obj);
-            if (obj is IStructuralEquatable)
-            {
-                IEnumerable enumerable;
-                return TryEnumerate((IStructuralEquatable)obj, out enumerable) && Equals(enumerable);
-            }
-            return false;
+            return this.Equal<INarySource>(obj)
+                   || this.Equal<IEnumerable>(obj)
+                   || this.Equal<IStructuralEquatable>(obj);
+        }
+
+        bool IEquatable<IStructuralEquatable>.Equals(IStructuralEquatable other)
+        {
+            IEnumerable enumerable;
+            return TryEnumerate(other, out enumerable) && this.Equal<IEnumerable>(enumerable);
         }
 
         public bool TryEnumerate(IStructuralEquatable obj, out IEnumerable enumerable)
@@ -129,27 +147,30 @@ namespace Smooth.Operands
             return IsInitial ? other.IsInitial : !other.IsInitial && Equals(other.Operands);
         }
 
-        public bool Equals(INarySource other)
+        bool IEquatable<INarySource>.Equals(INarySource other)
         {
             if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
-            if (Arity != other.Arity) return false;
-            return Equals(other.Operands);
+            return this.Equal<IEnumerable>(other.Operands);
         }
 
-        public bool Equals(INarySource<T> other)
+        bool IEquatable<IEnumerable>.Equals(IEnumerable other)
         {
-            if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
-            if (Arity != other.Arity) return false;
-            return Equals(other.Operands);
-        }
-
-        public bool Equals(IEnumerable other)
-        {
-            if (ReferenceEquals(other, null)) return IsInitial;
-            var comparand = other.Cast<object>().ToList();
-            if (Arity != comparand.Count)
-                return IsInitial && comparand.TrueForAll(x => ReferenceEquals(x, null));
-            return Operands.Cast<object>().SequenceEqual(comparand);
+            if (IsInitial)
+            {
+                if (ReferenceEquals(other, null)) return true;
+                IEnumerator enumerator = other.GetEnumerator();
+                while (enumerator.MoveNext())
+                    if (!IsNullTerm(enumerator.Current))
+                        return false;
+                return true;
+            }
+            if (ReferenceEquals(other, null)) return false;
+            List<object> local = Operands.Cast<object>().ToList();
+            List<object> comparand = other.Cast<object>().ToList();
+            if (Arity == comparand.Count) return local.SequenceEqual(comparand);
+            return (Arity < comparand.Count)
+                ? comparand.Skip(local.Count).All(IsNullTerm) && comparand.Take(local.Count).SequenceEqual(local)
+                : local.Skip(comparand.Count).All(IsNullTerm) && local.Take(comparand.Count).SequenceEqual(comparand);
         }
 
         public override int GetHashCode()
@@ -157,11 +178,11 @@ namespace Smooth.Operands
             switch (Arity)
             {
                 case 0:
-                    return Nullary.Value().GetHashCode();
+                    return Nullary.Value.GetHashCode();
                 case 1:
-                    return Unary.Value(Operands.Single()).GetHashCode();
+                    return Unary.Source(Operands.Single()).GetHashCode();
                 case 2:
-                    return Binary.Value(Operands.First(), Operands.Skip(1).Single()).GetHashCode();
+                    return Binary.Source(Operands.First(), Operands.Skip(1).Single()).GetHashCode();
                 default:
                     return Operands.Select(x => x.GetHashCode()).Aggregate(17, (a, b) => (a * 31) + b);
             }
@@ -199,12 +220,12 @@ namespace Smooth.Operands
 
         public static implicit operator Nary<T>(Binary<T, T> s)
         {
-            return new Nary<T>(s.Cast<T>());
+            return new Nary<T>(s.Operands.Cast<T>());
         }
 
         public static implicit operator Nary<T>(Unary<T> s)
         {
-            return new Nary<T>(s.Cast<T>());
+            return new Nary<T>(s.Operands);
         }
 
         public static implicit operator Nary<T>(Nullary s)

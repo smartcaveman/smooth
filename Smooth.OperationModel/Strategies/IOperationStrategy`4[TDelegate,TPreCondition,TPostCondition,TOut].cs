@@ -14,7 +14,7 @@ namespace Smooth.Strategies
 
         TPostCondition PostCondition { get; }
 
-        IResult<TOut> Apply(object[] input);
+        IOperationResult<TOut> Apply(object[] input);
     }
 
     [ContractClassFor(typeof(IOperationStrategy<,,,>))]
@@ -46,10 +46,10 @@ namespace Smooth.Strategies
             }
         }
 
-        IResult<TOut> IOperationStrategy<TDelegate, TPreCondition, TPostCondition, TOut>.Apply(object[] input)
+        IOperationResult<TOut> IOperationStrategy<TDelegate, TPreCondition, TPostCondition, TOut>.Apply(object[] input)
         {
-            Contract.Ensures(Contract.Result<IResult<TOut>>() != null);
-            return default(IResult<TOut>);
+            Contract.Ensures(Contract.Result<IOperationResult<TOut>>() != null);
+            return default(IOperationResult<TOut>);
         }
     }
 }

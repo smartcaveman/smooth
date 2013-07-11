@@ -70,10 +70,22 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Strategies\IActionStrategy`1[TContext].cs" />
-    <Compile Include="OperationModel\IContractGraph.cs" />
-    <Compile Include="OperationModel\IResult.cs" />
-    <Compile Include="OperationModel\IResult`1[TOut].cs" />
+    <Compile Include="OperationModel\IOperationResult.cs" />
+    <Compile Include="OperationModel\IOperator`1[TOut].cs" />
+    <Compile Include="OperationModel\Operation`2[TIn,TOut].cs" />
+    <Compile Include="ProcessModel\ActionBinding.cs" />
+    <Compile Include="ProcessModel\IProcessState.cs" />
+    <Compile Include="ProcessModel\ProcessState.cs" />
+    <Compile Include="ProcessModel\ResultWrapper.cs" />
+    <Compile Include="ProcessModel\Process.cs" />
+    <Compile Include="ProcessModel\IStateful`1[T].cs" />
+    <Compile Include="ProcessModel\ProcessResult.cs" />
+    <Compile Include="ProcessModel\Result.cs" />
+    <Compile Include="Strategies\IProcessStrategy`1[TContext].cs" />
+    <Compile Include="ProcessModel\IContractGraph`1[T].cs" />
+    <Compile Include="ProcessModel\IResult.cs" />
+    <Compile Include="OperationModel\IOperationResult`1[TOut].cs" />
+    <Compile Include="Strategies\IOperationStrategy5.cs" />
     <Compile Include="Strategies\IOperationStrategy`4[TDelegate,TPreCondition,TPostCondition,TOut].cs" />
     <Compile Include="OperationModel\IOperator.cs" />
     <Compile Include="Strategies\IStrategy`1[TDelegate].cs" />

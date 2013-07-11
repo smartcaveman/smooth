@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Smooth.Operands
 {
@@ -14,6 +13,13 @@ namespace Smooth.Operands
         , IEquatable<Unary<T>>
         , IEnumerable<T>
     {
+        static Unary()
+        {
+            Default = default(Unary<T>);
+        }
+
+        public static readonly Unary<T> Default;
+
         private readonly T operand;
 
         public Unary(T operand)
@@ -21,19 +27,43 @@ namespace Smooth.Operands
             this.operand = operand;
         }
 
-        public static IEqualityComparer<T> OperandEqualityComparer
+        INarySource ISource.ToNary()
         {
-            get { return EqualityComparer<T>.Default; }
+            return this;
         }
 
         public bool IsInitial
         {
-            get { return OperandEqualityComparer.Equals(Operand, default(T)); }
+            get { return ValueObject<T>.Equivalence.Equals(Operand, ValueObject<T>.Initial); }
         }
 
         object IUnarySource.Operand
         {
             get { return Operand; }
+        }
+
+        private static bool IsUnary1Struct(Type type)
+        {
+            return type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Unary<>);
+        }
+
+        public IBinarySource With(IUnarySource other)
+        {
+            if (other == null) return this.With(Unary<object>.Default);
+            Type otherType = other.GetType();
+            return IsUnary1Struct(otherType)
+                ? Binary.Source(typeof(T), Operand, otherType.GetGenericArguments()[0], other.Operand)
+                : other.With(this).Reverse();
+        }
+
+        public IBinarySource<T, R> With<R>(IUnarySource<R> other)
+        {
+            return other is Unary<R> ? this.With((Unary<R>)other) : other.With(this).Reverse();
+        }
+
+        public Binary<T, R> With<R>(Unary<R> other)
+        {
+            return new Binary<T, R>(this, other);
         }
 
         IEnumerable INarySource.Operands
@@ -85,51 +115,55 @@ namespace Smooth.Operands
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(obj, null)) return IsInitial;
-            if (obj is IUnarySource<T>) return Equals((IUnarySource<T>)obj);
-            if (obj is INarySource) return Equals((INarySource)obj);
-            if (obj is Tuple<T>) return Equals((Tuple<T>)obj);
-            if (obj is IEnumerable) return Equals((IEnumerable)obj);
-            return false;
+            return this.Equal<IUnarySource<T>>(obj)
+                   || this.Equal<INarySource>(obj)
+                   || this.Equal<Tuple<T>>(obj)
+                   || this.Equal<IEnumerable>(obj);
         }
 
         public bool Equals(Unary<T> other)
         {
-            return OperandEqualityComparer.Equals(Operand, other.Operand);
+            return ValueObject<T>.Equivalence.Equals(Operand, other.Operand);
         }
 
-        public bool Equals(Tuple<T> other)
-        {
-            return ReferenceEquals(other, null) ? IsInitial : OperandEqualityComparer.Equals(Operand, other.Item1);
-        }
-
-        public bool Equals(IUnarySource<T> other)
-        {
-            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : OperandEqualityComparer.Equals(Operand, other.Operand);
-        }
-
-        public bool Equals(INarySource other)
-        {
-            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : Equals(other.Operands);
-        }
-
-        public bool Equals(IEnumerable other)
+        bool IEquatable<Tuple<T>>.Equals(Tuple<T> other)
         {
             if (ReferenceEquals(other, null)) return IsInitial;
-            var list = other.Cast<object>().ToList();
-            switch (list.Count)
+            return ValueObject<T>.Equivalence.Equals(Operand, other.Item1);
+        }
+
+        bool IEquatable<IUnarySource<T>>.Equals(IUnarySource<T> other)
+        {
+            if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
+            return ValueObject<T>.Equivalence.Equals(Operand, other.Operand);
+        }
+
+        bool IEquatable<INarySource>.Equals(INarySource other)
+        {
+            if (ReferenceEquals(other, null) || other.IsInitial) return IsInitial;
+            return Equals(other.Operands);
+        }
+
+        bool IEquatable<IEnumerable>.Equals(IEnumerable other)
+        {
+            if (ReferenceEquals(other, null)) return IsInitial;
+            bool equal = false;
+            IEnumerator enumerator = other.GetEnumerator();
+            if (enumerator.MoveNext())
             {
-                case 0:
-                    return IsInitial;
-                case 1:
-                    return list[0] is T && OperandEqualityComparer.Equals(Operand, (T)list[0]);
-                default:
-                    return false;
+                object current = enumerator.Current;
+                if (!enumerator.MoveNext())
+                    equal = current is T && ValueObject<T>.Equivalence.Equals(Operand, (T)current);
             }
+            else
+                equal = IsInitial;
+            if (enumerator is IDisposable) ((IDisposable)enumerator).Dispose();
+            return equal;
         }
 
         public override int GetHashCode()
         {
-            return IsInitial ? 0 : OperandEqualityComparer.GetHashCode(Operand);
+            return IsInitial ? 0 : ValueObject<T>.Equivalence.GetHashCode(Operand);
         }
 
         public static bool operator ==(Unary<T> x, Unary<T> y)
@@ -164,19 +198,18 @@ namespace Smooth.Operands
 
         #endregion Equality
 
-        public static Unary<T> FromValue(T operand)
-        {
-            return new Unary<T>(operand);
-        }
+        #region Conversions
 
         public static explicit operator Unary<T>(T domain)
         {
-            return FromValue(domain);
+            return new Unary<T>(domain);
         }
 
         public static implicit operator Unary<T>(Tuple<T> tuple)
         {
-            return Unary<T>.FromValue(ReferenceEquals(tuple, null) ? default(T) : tuple.Item1);
+            return ReferenceEquals(tuple, null) ? Default : new Unary<T>(tuple.Item1);
         }
+
+        #endregion Conversions
     }
 }

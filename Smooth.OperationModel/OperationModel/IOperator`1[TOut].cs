@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using Smooth.Operands;
 
 namespace Smooth.OperationModel
 {
-    using Operands;
-
-    [ContractClass(typeof(IOperatorContract<,>))]
-    public interface IOperator<in TIn, out TOut> : IOperator<TOut>
-        where TIn : ISource
+    [ContractClass(typeof(IOperatorContract<>))]
+    public interface IOperator<out TOut> : IOperator
     {
         [Pure]
-        IOperationResult<TOut> Process(TIn input);
+        new IOperationResult<TOut> Process(ISource input);
     }
 
-    [Pure, ContractClassFor(typeof(IOperator<,>))]
-    internal abstract class IOperatorContract<TIn, TOut> : IOperator<TIn, TOut>
-        where TIn : ISource
+    [Pure, ContractClassFor(typeof(IOperator<>))]
+    internal abstract class IOperatorContract<TOut> : IOperator<TOut>
     {
         [Pure]
-        public IOperationResult<TOut> Process(TIn input)
+        IOperationResult<TOut> IOperator<TOut>.Process(ISource input)
         {
             Contract.Requires<ArgumentNullException>(!ReferenceEquals(input, null));
             Contract.Ensures(Contract.Result<IOperationResult<TOut>>() != null);
@@ -28,11 +25,6 @@ namespace Smooth.OperationModel
         string IOperator.Symbol
         {
             get { throw new NotImplementedException(); }
-        }
-
-        IOperationResult<TOut> IOperator<TOut>.Process(ISource input)
-        {
-            throw new NotImplementedException();
         }
 
         IOperationResult IOperator.Process(ISource input)

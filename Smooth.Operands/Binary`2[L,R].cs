@@ -14,20 +14,35 @@ namespace Smooth.Operands
         , IEquatable<Binary<L, R>>
         , IEnumerable<object>
     {
+        static Binary()
+        {
+            Default = default(Binary<L, R>);
+        }
+
+        public static readonly Binary<L, R> Default;
+
         private readonly Unary<L> left;
         private readonly Unary<R> right;
 
-        public Binary(L left, R right)
+        internal Binary(Unary<L> left, Unary<R> right)
         {
-            this.left = Unary.Value(left);
-            this.right = Unary.Value(right);
+            this.left = left;
+            this.right = right;
         }
+
+        public Binary(L left, R right)
+            : this(Unary.Source(left), Unary.Source(right))
+        { }
 
         public bool IsInitial
         {
             get { return Left.IsInitial && Right.IsInitial; }
         }
 
+        INarySource ISource.ToNary()
+        {
+            return this;
+        }
 
         public Unary<L> Left { get { return this.left; } }
 
@@ -50,6 +65,21 @@ namespace Smooth.Operands
         object IBinarySource.RightOperand
         {
             get { return Right.Operand; }
+        }
+
+        private Binary<R, L> Reverse()
+        {
+            return new Binary<R, L>(Right, Left);
+        }
+
+        IBinarySource<R, L> IBinarySource<L, R>.Reverse()
+        {
+            return Reverse();
+        }
+
+        IBinarySource IBinarySource.Reverse()
+        {
+            return Reverse();
         }
 
         public L LeftOperand
@@ -95,23 +125,10 @@ namespace Smooth.Operands
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(obj, null)) return IsInitial;
-            if (obj is IBinarySource<L, R>) return Equals((IBinarySource<L, R>)obj);
-            if (obj is INarySource) return Equals((INarySource)obj);
-            if (obj is Tuple<L, R>) return Equals((Tuple<L, R>)obj);
-            if (obj is IEnumerable) return Equals((IEnumerable)obj);
-            return false;
-        }
-
-        public bool Equals(IBinarySource<L, R> other)
-        {
-            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : Left.ValueEquals(other.LeftOperand) && Right.ValueEquals(other.RightOperand);
-        }
-
-        public bool Equals(Tuple<L, R> other)
-        {
-            return ReferenceEquals(other, null)
-                       ? IsInitial
-                       : Left.Equals(Unary.Value(other.Item1)) && Right.Equals(Unary.Value(other.Item2));
+            return this.Equal<IBinarySource<L, R>>(to: obj)
+                || this.Equal<INarySource>(to: obj)
+                || this.Equal<Tuple<L, R>>(to: obj)
+                || this.Equal<IEnumerable>(to: obj);
         }
 
         public bool Equals(Binary<L, R> other)
@@ -119,23 +136,32 @@ namespace Smooth.Operands
             return Left.Equals(other.Left) && Right.Equals(other.Right);
         }
 
-        public bool Equals(INarySource other)
+        bool IEquatable<IBinarySource<L, R>>.Equals(IBinarySource<L, R> other)
+        {
+            return (ReferenceEquals(other, null) || other.IsInitial) ? IsInitial : Left.ValueEquals(other.LeftOperand) && Right.ValueEquals(other.RightOperand);
+        }
+
+        bool IEquatable<Tuple<L, R>>.Equals(Tuple<L, R> other)
+        {
+            return ReferenceEquals(other, null)
+                       ? IsInitial
+                       : Left.Equals(Unary.Source(other.Item1)) && Right.Equals(Unary.Source(other.Item2));
+        }
+
+        bool IEquatable<INarySource>.Equals(INarySource other)
         {
             if ((ReferenceEquals(other, null) || other.IsInitial)) return IsInitial;
             return Equals(other.Operands);
         }
 
-        public bool Equals(IEnumerable other)
+        bool IEquatable<IEnumerable>.Equals(IEnumerable other)
         {
             if (ReferenceEquals(other, null)) return IsInitial;
-
             var list = other.Cast<object>().ToList();
             switch (list.Count)
             {
                 case 0:
                     return IsInitial;
-                case 1:
-                    return false;
                 case 2:
                     return list[0] is L && list[1] is R && Left.ValueEquals((L)list[0]) && Right.ValueEquals((R)list[1]);
                 default:

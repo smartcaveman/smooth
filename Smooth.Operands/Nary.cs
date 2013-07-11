@@ -10,14 +10,14 @@ namespace Smooth.Operands
             return source ?? default(Nary<T>);
         }
 
-        public static Nary<T> Value<T>(IEnumerable<T> operands)
+        public static Nary<T> Source<T>(IEnumerable<T> operands)
         {
             return new Nary<T>(operands);
         }
 
-        public static Nary<T> Value<T>(params T[] operands)
+        public static Nary<T> Source<T>(params T[] operands)
         {
-            return Value((operands ?? new T[0]).AsEnumerable());
+            return Source((operands ?? new T[0]).AsEnumerable());
         }
 
         public static bool ValuesEqual<T>(this INarySource<T> source, params T[] operands)
@@ -27,7 +27,7 @@ namespace Smooth.Operands
 
         public static bool ValuesEqual<T>(this INarySource<T> source, IEnumerable<T> operands)
         {
-            return source.OrDefault().Equals(Value(operands ?? new T[0]));
+            return source.OrDefault().Equals(Source(operands ?? new T[0]));
         }
     }
 }
